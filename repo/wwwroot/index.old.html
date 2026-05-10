@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>İnsan Kaynakları Yönetim Sistemi</title>
+    <link rel="stylesheet" href="/style.css?v=30" />
+</head>
+<body>
+    <div id="toast" class="toast"></div>
+
+    <section id="authPage" class="auth-page">
+        <div class="auth-card">
+            <div class="auth-info">
+                <h1>İnsan Kaynakları Yönetim Sistemi</h1>
+                <p>
+                    Departman, çalışan ve maaş bordrosu işlemlerini tek bir web arayüzü üzerinden
+                    yönetmek için geliştirilen final projesi.
+                </p>
+            </div>
+
+            <div class="auth-forms">
+                <div class="form-box">
+                    <h2>Giriş Yap</h2>
+
+                    <label>E-posta</label>
+                    <input type="email" id="loginEmail" value="semanur@example.com" />
+
+                    <label>Şifre</label>
+                    <input type="password" id="loginPassword" value="123456" />
+
+                    <button onclick="loginUser()">Giriş Yap</button>
+                </div>
+
+                <div class="form-box secondary">
+                    <h2>Kayıt Ol</h2>
+
+                    <label>Ad Soyad</label>
+                    <input type="text" id="registerFullName" value="Semanur Yıldırım" />
+
+                    <label>E-posta</label>
+                    <input type="email" id="registerEmail" placeholder="ornek@example.com" />
+
+                    <label>Şifre</label>
+                    <input type="password" id="registerPassword" placeholder="En az 6 karakter" />
+
+                    <button onclick="registerUser()">Kayıt Ol</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="appLayout" class="app-layout hidden">
+        <aside class="sidebar">
+            <div class="brand">
+                <h2>İK Yönetimi</h2>
+                <span>Final Projesi</span>
+            </div>
+
+            <nav>
+                <button class="nav-btn active" onclick="showPage('dashboardPage', this)">Ana Sayfa</button>
+                <button class="nav-btn" onclick="showPage('departmentsPage', this)">Departmanlar</button>
+                <button class="nav-btn" onclick="showPage('employeesPage', this)">Çalışanlar</button>
+                <button class="nav-btn" onclick="showPage('payrollPage', this)">Bordro</button>
+            </nav>
+
+            <button class="logout-btn" onclick="logout()">Çıkış Yap</button>
+        </aside>
+
+        <main class="content">
+            <section id="dashboardPage" class="page active-page">
+                <div class="page-header">
+                    <h1>Ana Sayfa</h1>
+                    <p>İnsan kaynakları süreçlerinin genel özeti</p>
+                </div>
+
+                <div class="summary-grid">
+                    <div class="summary-card">
+                        <span>Toplam Departman</span>
+                        <strong id="departmentCount">0</strong>
+                    </div>
+
+                    <div class="summary-card">
+                        <span>Toplam Çalışan</span>
+                        <strong id="employeeCount">0</strong>
+                    </div>
+
+                    <div class="summary-card">
+                        <span>Bordro Kaydı</span>
+                        <strong id="payrollCount">0</strong>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h2>Proje Hakkında</h2>
+                    <p>
+                        Bu sistem C# .NET 8, Entity Framework Core ve SQL Server kullanılarak
+                        geliştirilmiştir. Web arayüzünde departman yönetimi, çalışan yönetimi ve
+                        basitleştirilmiş maaş bordrosu işlemleri yapılabilmektedir.
+                    </p>
+                </div>
+            </section>
+
+            <section id="departmentsPage" class="page">
+                <div class="page-header">
+                    <h1>Departmanlar</h1>
+                    <p>Departman ekleme, listeleme, güncelleme ve silme işlemleri</p>
+                </div>
+
+                <div class="two-column">
+                    <div class="panel">
+                        <h2>Departman Ekle</h2>
+
+                        <label>Departman Adı</label>
+                        <input type="text" id="departmentName" placeholder="Yazılım" />
+
+                        <label>Açıklama</label>
+                        <input type="text" id="departmentDescription" placeholder="Yazılım geliştirme departmanı" />
+
+                        <div class="button-row">
+                            <button id="departmentSaveBtn" onclick="saveDepartment()">Kaydet</button>
+                            <button id="departmentCancelBtn" class="cancel-btn hidden" onclick="cancelDepartmentEdit()">Vazgeç</button>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-title">
+                            <h2>Departman Listesi</h2>
+                        </div>
+
+                        <div id="departmentList" class="list"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="employeesPage" class="page">
+                <div class="page-header">
+                    <h1>Çalışanlar</h1>
+                    <p>Çalışan ekleme, departmana bağlama, güncelleme ve listeleme işlemleri</p>
+                </div>
+
+                <div class="two-column">
+                    <div class="panel">
+                        <h2>Çalışan Ekle</h2>
+
+                        <div class="form-row">
+                            <div>
+                                <label>Ad</label>
+                                <input type="text" id="employeeFirstName" placeholder="Ayşe" />
+                            </div>
+
+                            <div>
+                                <label>Soyad</label>
+                                <input type="text" id="employeeLastName" placeholder="Demir" />
+                            </div>
+                        </div>
+
+                        <label>E-posta</label>
+                        <input type="email" id="employeeEmail" placeholder="ayse.demir@example.com" />
+
+                        <div class="form-row">
+                            <div>
+                                <label>Telefon</label>
+                                <input type="text" id="employeePhone" placeholder="05550000000" />
+                            </div>
+
+                            <div>
+                                <label>İşe Giriş Tarihi</label>
+                                <input type="date" id="employeeHireDate" />
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div>
+                                <label>Brüt Maaş</label>
+                                <input type="number" id="employeeSalary" placeholder="30000" />
+                            </div>
+
+                            <div>
+                                <label>Departman</label>
+                                <select id="employeeDepartment"></select>
+                            </div>
+                        </div>
+
+                        <div class="button-row">
+                            <button id="employeeSaveBtn" onclick="saveEmployee()">Kaydet</button>
+                            <button id="employeeCancelBtn" class="cancel-btn hidden" onclick="cancelEmployeeEdit()">Vazgeç</button>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-title">
+                            <h2>Çalışan Listesi</h2>
+                        </div>
+
+                        <div id="employeeList" class="list"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="payrollPage" class="page">
+                <div class="page-header">
+                    <h1>Bordro</h1>
+                    <p>Çalışan brüt maaşı üzerinden örnek net maaş hesaplama</p>
+                </div>
+
+                <div class="two-column">
+                    <div class="panel">
+                        <h2>Bordro Hesapla</h2>
+
+                        <label>Çalışan</label>
+                        <select id="payrollEmployee"></select>
+
+                        <label>Bordro Dönemi</label>
+                        <input type="month" id="payrollPeriod" />
+
+                        <button onclick="calculatePayroll()">Hesapla</button>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-title">
+                            <h2>Bordro Listesi</h2>
+                        </div>
+
+                        <div id="payrollList" class="list"></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </section>
+
+    <script src="/app.js?v=30"></script>
+</body>
+</html>
