@@ -50,14 +50,19 @@
         <div class="brand">
             <h2>İK Yönetimi</h2>
             <span>Final Projesi</span>
+            <small id="roleBadge">Rol: -</small>
         </div>
 
         <nav>
-            <button class="nav-btn active" onclick="showPage('dashboardPage', this)">Ana Sayfa</button>
-            <button class="nav-btn" onclick="showPage('departmentsPage', this)">Departmanlar</button>
-            <button class="nav-btn" onclick="showPage('employeesPage', this)">Çalışanlar</button>
-            <button class="nav-btn" onclick="showPage('payrollPage', this)">Bordro</button>
-            <button class="nav-btn" onclick="showPage('leaveRequestsPage', this)">İzinler</button>
+            <button id="navDashboard" class="nav-btn active" onclick="showPage('dashboardPage', this)">Ana Sayfa</button>
+
+            <button id="navDepartments" class="nav-btn manager-only" onclick="showPage('departmentsPage', this)">Departmanlar</button>
+
+            <button id="navEmployees" class="nav-btn manager-only" onclick="showPage('employeesPage', this)">Çalışanlar</button>
+
+            <button id="navPayroll" class="nav-btn manager-only" onclick="showPage('payrollPage', this)">Bordro</button>
+
+            <button id="navLeaveRequests" class="nav-btn" onclick="showPage('leaveRequestsPage', this)">İzinler</button>
         </nav>
 
         <button class="logout-btn" onclick="logout()">Çıkış Yap</button>

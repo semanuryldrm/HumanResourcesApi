@@ -1,6 +1,7 @@
 const apiBase = "";
 
 let token = localStorage.getItem("hr_token") || "";
+let currentRole = localStorage.getItem("hr_role") || "";
 
 let editingDepartmentId = null;
 let editingEmployeeId = null;
@@ -62,6 +63,14 @@ function authHeaders() {
     };
 }
 
+function saveAuthData(data) {
+    token = data.token;
+    currentRole = data.role || (data.roles && data.roles.length > 0 ? data.roles[0] : "");
+
+    localStorage.setItem("hr_token", token);
+    localStorage.setItem("hr_role", currentRole);
+}
+
 async function handleResponse(response) {
     const text = await response.text();
 
@@ -99,6 +108,75 @@ async function handleResponse(response) {
 function openApp() {
     document.getElementById("authPage").classList.add("hidden");
     document.getElementById("appLayout").classList.remove("hidden");
+
+    applyRoleUI();
+}
+
+function isManagerRole() {
+    return currentRole === "Admin" || currentRole === "IK";
+}
+
+function applyRoleUI() {
+    const roleBadge = document.getElementById("roleBadge");
+
+    if (roleBadge) {
+        roleBadge.textContent = currentRole ? `Rol: ${currentRole}` : "Rol: -";
+    }
+
+    document.querySelectorAll(".manager-only").forEach(element => {
+        if (isManagerRole()) {
+            element.classList.remove("hidden");
+        } else {
+            element.classList.add("hidden");
+        }
+    });
+
+    updateDashboardByRole();
+
+    if (!isManagerRole()) {
+        const activePage = document.querySelector(".page.active-page");
+
+        if (
+            activePage &&
+            ["departmentsPage", "employeesPage", "payrollPage"].includes(activePage.id)
+        ) {
+            const dashboardButton = document.getElementById("navDashboard");
+
+            if (dashboardButton) {
+                showPage("dashboardPage", dashboardButton);
+            }
+        }
+    }
+}
+
+function updateDashboardByRole() {
+    const title = document.querySelector("#dashboardPage .page-header h1");
+    const description = document.querySelector("#dashboardPage .page-header p");
+
+    if (!title || !description) {
+        return;
+    }
+
+    if (currentRole === "Admin") {
+        title.textContent = "Admin Paneli";
+        description.textContent = "Sistemdeki tüm insan kaynakları süreçlerini yönetebilirsiniz.";
+        return;
+    }
+
+    if (currentRole === "IK") {
+        title.textContent = "İK Paneli";
+        description.textContent = "Departman, çalışan, izin ve bordro süreçlerini yönetebilirsiniz.";
+        return;
+    }
+
+    if (currentRole === "Personel") {
+        title.textContent = "Personel Paneli";
+        description.textContent = "İzin taleplerinizi ve sistemde görüntüleme yetkiniz olan bilgileri takip edebilirsiniz.";
+        return;
+    }
+
+    title.textContent = "Ana Sayfa";
+    description.textContent = "İnsan kaynakları süreçlerinin genel özeti";
 }
 
 async function showPage(pageId, button) {
@@ -156,8 +234,7 @@ async function registerUser() {
 
         const data = await handleResponse(response);
 
-        token = data.token;
-        localStorage.setItem("hr_token", token);
+        saveAuthData(data);
 
         openApp();
         await refreshAll();
@@ -185,8 +262,7 @@ async function loginUser() {
 
         const data = await handleResponse(response);
 
-        token = data.token;
-        localStorage.setItem("hr_token", token);
+        saveAuthData(data);
 
         openApp();
         await refreshAll();
@@ -199,7 +275,10 @@ async function loginUser() {
 
 function logout() {
     token = "";
+    currentRole = "";
+
     localStorage.removeItem("hr_token");
+    localStorage.removeItem("hr_role");
 
     editingDepartmentId = null;
     editingEmployeeId = null;
@@ -662,16 +741,20 @@ async function loadPayrolls() {
             const item = document.createElement("div");
             item.className = "item";
 
+            const payrollActions = `
+                <div class="item-actions">
+                    <button class="edit-btn" onclick="downloadPayrollPdf(${payroll.id})">PDF İndir</button>
+                    ${isManagerRole() ? `<button class="delete-btn" onclick="deletePayroll(${payroll.id})">Sil</button>` : ""}
+                </div>
+            `;
+
             item.innerHTML = `
                 <strong>${payroll.employeeFullName}</strong>
                 <p>Dönem: ${payroll.period}</p>
                 <p>Brüt Maaş: ${payroll.grossSalary} TL</p>
                 <p>Kesinti: ${payroll.deductionAmount} TL</p>
                 <p>Net Maaş: ${payroll.netSalary} TL</p>
-                <div class="item-actions">
-                    <button class="edit-btn" onclick="downloadPayrollPdf(${payroll.id})">PDF İndir</button>
-                    <button class="delete-btn" onclick="deletePayroll(${payroll.id})">Sil</button>
-                </div>
+                ${payrollActions}
             `;
 
             list.appendChild(item);
@@ -792,6 +875,16 @@ async function loadLeaveRequests() {
             const item = document.createElement("div");
             item.className = "item";
 
+            const managerActions = isManagerRole()
+                ? `
+                    <div class="item-actions">
+                        <button class="edit-btn" onclick="updateLeaveRequestStatus(${leave.id}, 'Onaylandı')">Onayla</button>
+                        <button class="delete-btn" onclick="updateLeaveRequestStatus(${leave.id}, 'Reddedildi')">Reddet</button>
+                        <button class="delete-btn" onclick="deleteLeaveRequest(${leave.id})">Sil</button>
+                    </div>
+                `
+                : "";
+
             item.innerHTML = `
                 <strong>${leave.employeeFullName}</strong>
                 <p>İzin Türü: ${leave.leaveType}</p>
@@ -799,11 +892,7 @@ async function loadLeaveRequests() {
                 <p>Toplam Gün: ${leave.totalDays}</p>
                 <p>Açıklama: ${leave.description || "-"}</p>
                 <p>Durum: <span class="status-badge ${getStatusClass(leave.status)}">${leave.status}</span></p>
-                <div class="item-actions">
-                    <button class="edit-btn" onclick="updateLeaveRequestStatus(${leave.id}, 'Onaylandı')">Onayla</button>
-                    <button class="delete-btn" onclick="updateLeaveRequestStatus(${leave.id}, 'Reddedildi')">Reddet</button>
-                    <button class="delete-btn" onclick="deleteLeaveRequest(${leave.id})">Sil</button>
-                </div>
+                ${managerActions}
             `;
 
             list.appendChild(item);

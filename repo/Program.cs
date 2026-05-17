@@ -87,6 +87,11 @@ builder.Services
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    await SeedData.InitializeAsync(scope.ServiceProvider);
+}
+
 app.UseStaticFiles();
 
 if (app.Environment.IsDevelopment())
