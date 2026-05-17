@@ -1,4 +1,4 @@
-[README (6).md](https://github.com/user-attachments/files/27905718/README.6.md)# .NET Core İnsan Kaynakları Yönetim Sistemi API
+# .NET Core İnsan Kaynakları Yönetim Sistemi API
 
 ASP.NET Core ile geliştirilmiş insan kaynakları yönetim sistemi projesidir. Proje kapsamında kullanıcı işlemleri, rol bazlı yetkilendirme, departman yönetimi, çalışan yönetimi, izin yönetimi, bordro hesaplama, bordro PDF raporu alma ve dashboard istatistikleri web tabanlı olarak gerçekleştirilmiştir.
 
