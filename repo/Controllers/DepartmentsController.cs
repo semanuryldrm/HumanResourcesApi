@@ -1,9 +1,9 @@
 using HumanResourcesApi.Data;
 using HumanResourcesApi.DTOs;
 using HumanResourcesApi.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authorization;
 
 namespace HumanResourcesApi.Controllers;
 
@@ -11,7 +11,6 @@ namespace HumanResourcesApi.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 public class DepartmentsController : ControllerBase
-
 {
     private readonly ApplicationDbContext _context;
 
@@ -63,6 +62,7 @@ public class DepartmentsController : ControllerBase
         return Ok(department);
     }
 
+    [Authorize(Roles = "Admin,IK")]
     [HttpPost]
     public async Task<ActionResult<DepartmentReadDto>> CreateDepartment(DepartmentCreateDto dto)
     {
@@ -101,6 +101,7 @@ public class DepartmentsController : ControllerBase
         return CreatedAtAction(nameof(GetDepartmentById), new { id = department.Id }, result);
     }
 
+    [Authorize(Roles = "Admin,IK")]
     [HttpPut("{id:int}")]
     public async Task<IActionResult> UpdateDepartment(int id, DepartmentUpdateDto dto)
     {
@@ -124,6 +125,7 @@ public class DepartmentsController : ControllerBase
         return NoContent();
     }
 
+    [Authorize(Roles = "Admin,IK")]
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteDepartment(int id)
     {

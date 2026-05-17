@@ -113,6 +113,7 @@ public class LeaveRequestsController : ControllerBase
         });
     }
 
+    [Authorize(Roles = "Admin,IK")]
     [HttpPut("{id}/status")]
     public async Task<IActionResult> UpdateLeaveRequestStatus(int id, LeaveRequestUpdateStatusDto dto)
     {
@@ -137,6 +138,7 @@ public class LeaveRequestsController : ControllerBase
         return Ok("İzin durumu başarıyla güncellendi.");
     }
 
+    [Authorize(Roles = "Admin,IK")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteLeaveRequest(int id)
     {

@@ -1,9 +1,9 @@
 using HumanResourcesApi.Data;
 using HumanResourcesApi.DTOs;
 using HumanResourcesApi.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authorization;
 
 namespace HumanResourcesApi.Controllers;
 
@@ -72,6 +72,7 @@ public class EmployeesController : ControllerBase
         return Ok(employee);
     }
 
+    [Authorize(Roles = "Admin,IK")]
     [HttpPost]
     public async Task<ActionResult<EmployeeReadDto>> CreateEmployee(EmployeeCreateDto dto)
     {
@@ -146,6 +147,7 @@ public class EmployeesController : ControllerBase
         return CreatedAtAction(nameof(GetEmployeeById), new { id = employee.Id }, result);
     }
 
+    [Authorize(Roles = "Admin,IK")]
     [HttpPut("{id:int}")]
     public async Task<IActionResult> UpdateEmployee(int id, EmployeeUpdateDto dto)
     {
@@ -205,6 +207,7 @@ public class EmployeesController : ControllerBase
         return NoContent();
     }
 
+    [Authorize(Roles = "Admin,IK")]
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteEmployee(int id)
     {

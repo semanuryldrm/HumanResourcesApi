@@ -78,6 +78,7 @@ public class PayrollsController : ControllerBase
         return Ok(payrolls);
     }
 
+    [Authorize(Roles = "Admin,IK")]
     [HttpPost("calculate/{employeeId:int}")]
     public async Task<ActionResult<PayrollReadDto>> CalculatePayroll(int employeeId, PayrollCreateDto dto)
     {
@@ -148,6 +149,7 @@ public class PayrollsController : ControllerBase
         return Ok(result);
     }
 
+    [Authorize(Roles = "Admin,IK")]
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeletePayroll(int id)
     {

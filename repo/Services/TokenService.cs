@@ -17,6 +17,11 @@ public class TokenService
 
     public string CreateToken(ApplicationUser user)
     {
+        return CreateToken(user, new List<string>());
+    }
+
+    public string CreateToken(ApplicationUser user, IList<string> roles)
+    {
         var jwtKey = _configuration["Jwt:Key"];
         var issuer = _configuration["Jwt:Issuer"];
         var audience = _configuration["Jwt:Audience"];
@@ -28,6 +33,11 @@ public class TokenService
             new Claim(ClaimTypes.Name, user.FullName),
             new Claim(ClaimTypes.Email, user.Email ?? string.Empty)
         };
+
+        foreach (var role in roles)
+        {
+            claims.Add(new Claim(ClaimTypes.Role, role));
+        }
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey!));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
