@@ -213,6 +213,26 @@ async function refreshAll() {
     await loadLeaveRequests();
 }
 
+function setTextIfExists(elementId, value) {
+    const element = document.getElementById(elementId);
+
+    if (element) {
+        element.textContent = value;
+    }
+}
+
+function updateLeaveSummaryCards(leaveRequests) {
+    const totalLeaveCount = leaveRequests.length;
+    const pendingLeaveCount = leaveRequests.filter(leave => leave.status === "Beklemede").length;
+    const approvedLeaveCount = leaveRequests.filter(leave => leave.status === "Onaylandı").length;
+    const rejectedLeaveCount = leaveRequests.filter(leave => leave.status === "Reddedildi").length;
+
+    setTextIfExists("leaveRequestCount", totalLeaveCount);
+    setTextIfExists("pendingLeaveCount", pendingLeaveCount);
+    setTextIfExists("approvedLeaveCount", approvedLeaveCount);
+    setTextIfExists("rejectedLeaveCount", rejectedLeaveCount);
+}
+
 async function loadDepartments() {
     try {
         const response = await fetch(`${apiBase}/api/Departments`, {
@@ -700,10 +720,6 @@ function getStatusClass(status) {
 async function loadLeaveRequests() {
     const list = document.getElementById("leaveRequestList");
 
-    if (!list) {
-        return;
-    }
-
     try {
         const response = await fetch(`${apiBase}/api/LeaveRequests`, {
             headers: authHeaders()
@@ -712,6 +728,11 @@ async function loadLeaveRequests() {
         const leaveRequests = await handleResponse(response);
 
         leaveRequestsCache = leaveRequests;
+        updateLeaveSummaryCards(leaveRequests);
+
+        if (!list) {
+            return;
+        }
 
         list.innerHTML = "";
 
