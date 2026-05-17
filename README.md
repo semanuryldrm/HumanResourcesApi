@@ -1,12 +1,12 @@
-# .NET Core İnsan Kaynakları Yönetim Sistemi API
+[README (6).md](https://github.com/user-attachments/files/27905718/README.6.md)# .NET Core İnsan Kaynakları Yönetim Sistemi API
 
-ASP.NET Core ile geliştirilmiş insan kaynakları yönetim sistemi projesidir. Proje kapsamında kullanıcı işlemleri, departman yönetimi, çalışan yönetimi ve bordro hesaplama işlemleri web tabanlı olarak gerçekleştirilmiştir.
+ASP.NET Core ile geliştirilmiş insan kaynakları yönetim sistemi projesidir. Proje kapsamında kullanıcı işlemleri, rol bazlı yetkilendirme, departman yönetimi, çalışan yönetimi, izin yönetimi, bordro hesaplama, bordro PDF raporu alma ve dashboard istatistikleri web tabanlı olarak gerçekleştirilmiştir.
 
 ## 🎯 Özet
 
-Bu proje, Web Tabanlı Programlama dersi final projesi kapsamında geliştirilmiştir. İnsan kaynakları süreçlerinde kullanılan temel işlemlerin tek bir sistem üzerinden takip edilebilmesi amaçlanmıştır.
+Bu proje, BMU1208 Web Tabanlı Programlama dersi final projesi kapsamında geliştirilmiştir. İnsan kaynakları süreçlerinde kullanılan temel işlemlerin tek bir sistem üzerinden takip edilebilmesi amaçlanmıştır.
 
-Uygulama sayesinde kullanıcı kaydı ve girişi yapılabilmekte, departmanlar oluşturulabilmekte, çalışan bilgileri yönetilebilmekte ve çalışanların brüt maaşları üzerinden örnek bordro hesaplaması yapılabilmektedir. Proje, ASP.NET Core MVC ve Web API yapısı birlikte kullanılarak hazırlanmıştır.
+Uygulama sayesinde kullanıcı kaydı ve girişi yapılabilmekte, Admin / IK / Personel rollerine göre farklı yetkiler uygulanabilmekte, departmanlar oluşturulabilmekte, çalışan bilgileri yönetilebilmekte, çalışanlara ait izin talepleri takip edilebilmekte ve çalışanların brüt maaşları üzerinden örnek bordro hesaplaması yapılabilmektedir. Ayrıca oluşturulan bordro kayıtları PDF olarak indirilebilmektedir. Proje, ASP.NET Core MVC ve Web API yapısı birlikte kullanılarak hazırlanmıştır.
 
 ## 🙋‍♀️ Hazırlayan
 
@@ -42,19 +42,43 @@ http://localhost:5207/swagger
 
 > Not: Port numarası bilgisayardaki çalışma ayarlarına göre değişebilir. Kesin adres için `dotnet run` çıktısındaki `Now listening on:` satırı kontrol edilmelidir.
 
+## 👤 Demo Hesaplar
+
+Proje çalıştırıldığında demo kullanıcılar otomatik olarak oluşturulacak şekilde hazırlanmıştır.
+
+| Rol | E-posta | Şifre |
+|---|---|---|
+| Admin | admin@example.com | 123456 |
+| IK | ik@example.com | 123456 |
+| Personel | personel@example.com | 123456 |
+
+Demo kullanıcıların yetkileri farklıdır:
+
+- **Admin**: Tüm yönetim işlemlerini görebilir ve kullanabilir.
+- **IK**: Departman, çalışan, izin ve bordro süreçlerini yönetebilir.
+- **Personel**: Sadece kendisine uygun arayüzü görür, izin talebi oluşturabilir ve yetkisi olmayan yönetim butonlarını görmez.
+
 ## ✨ Ana Özellikler
 
 - Kullanıcı kayıt ve giriş işlemleri
 - JWT tabanlı kimlik doğrulama
+- Admin / IK / Personel rollerine göre rol bazlı yetkilendirme
+- Role göre değişen frontend görünümü
+- Demo kullanıcıların otomatik oluşturulması
 - Departman ekleme, listeleme, güncelleme ve silme işlemleri
 - Çalışan ekleme, listeleme, güncelleme ve silme işlemleri
 - Çalışanların departmanlarla ilişkilendirilmesi
+- İzin talebi oluşturma, listeleme, onaylama, reddetme ve silme işlemleri
 - Brüt maaş üzerinden örnek bordro hesaplama
+- Bordro kayıtlarını PDF olarak indirme
+- Dashboard üzerinde departman, çalışan, bordro ve izin istatistikleri
+- Modern ve responsive web arayüzü
 - ASP.NET Core MVC yapısına uygun Razor View arayüzü
 - Web API endpointleri ile veri işlemleri
 - Entity Framework Core ile veritabanı yönetimi
 - SQL Server / SQL Server Express bağlantısı
 - Swagger arayüzü ile API test imkânı
+- GitHub teslim klasör yapısına uygun proje düzeni
 
 ## 🧰 Tech Stack
 
@@ -66,8 +90,9 @@ http://localhost:5207/swagger
 | ASP.NET Core Web API | JSON tabanlı API endpointleri |
 | Entity Framework Core | Veritabanı işlemleri |
 | SQL Server / SQL Server Express | Veritabanı yönetimi |
-| ASP.NET Core Identity | Kullanıcı yönetimi |
+| ASP.NET Core Identity | Kullanıcı ve rol yönetimi |
 | JWT | Kimlik doğrulama |
+| QuestPDF | Bordro raporlarını PDF olarak oluşturma |
 | Swagger / OpenAPI | API test ve dokümantasyonu |
 | HTML, CSS, JavaScript | Arayüz geliştirme |
 | Git & GitHub | Versiyon kontrolü ve proje teslimi |
@@ -158,7 +183,7 @@ Proje SQL Server / SQL Server Express üzerinde çalışacak şekilde hazırlanm
 
 ```json
 "ConnectionStrings": {
-  "DefaultConnection": "Server=SEMA\\SQLEXPRESS;Database=HumanResourcesDb;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true"
+  "DefaultConnection": "Server=SEMA\\\\SQLEXPRESS;Database=HumanResourcesDb;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true"
 }
 ```
 
@@ -170,10 +195,17 @@ Proje manuel olarak web arayüzü ve Swagger üzerinden test edilmiştir. Temel 
 
 - Kullanıcı kayıt işlemi
 - Kullanıcı giriş işlemi
-- Departman ekleme ve listeleme
-- Çalışan ekleme ve listeleme
+- Demo kullanıcılarla giriş testi
+- Admin / IK / Personel rollerine göre arayüz kontrolü
+- Rol bazlı yetkilendirme kontrolü
+- Departman ekleme, listeleme, güncelleme ve silme
+- Çalışan ekleme, listeleme, güncelleme ve silme
 - Çalışanın departmanla ilişkilendirilmesi
+- İzin talebi oluşturma
+- İzin talebini onaylama ve reddetme
 - Bordro hesaplama
+- Bordro PDF raporu indirme
+- Dashboard istatistiklerinin güncellenmesi
 - Verilerin SQL Server veritabanına kaydedilmesi
 
 ## 📁 Klasör Yapısı
@@ -212,6 +244,10 @@ Bu repository, ders kapsamında verilen final proje teslim klasör yapısına uy
 
 Sistemde kullanıcı kayıt ve giriş işlemleri bulunmaktadır. Kullanıcı giriş yaptığında JWT token üretilir ve korumalı API işlemlerinde bu token kullanılır.
 
+### Rol Bazlı Yetkilendirme
+
+Projede Admin, IK ve Personel rolleri bulunmaktadır. Admin ve IK rolleri yönetim işlemlerine erişebilirken, Personel rolü daha sınırlı bir arayüz üzerinden sistemi kullanmaktadır. Bu sayede kullanıcılar sadece yetkili oldukları işlemleri görebilmekte ve gerçekleştirebilmektedir.
+
 ### Departman Yönetimi
 
 Departman modülünde departman ekleme, listeleme, güncelleme ve silme işlemleri yapılabilmektedir. Çalışan kayıtları departmanlarla ilişkilendirildiği için bu modül sistemin temel parçalarından biridir.
@@ -220,11 +256,23 @@ Departman modülünde departman ekleme, listeleme, güncelleme ve silme işlemle
 
 Çalışan modülünde personel bilgileri sisteme eklenebilir. Çalışan adı, soyadı, e-posta adresi, telefon numarası, işe giriş tarihi, brüt maaş ve bağlı olduğu departman bilgileri tutulmaktadır.
 
+### İzin Yönetimi
+
+İzin yönetimi modülünde çalışanlara ait izin talepleri oluşturulabilir ve listelenebilir. Admin ve IK rolleri izin taleplerini onaylayabilir, reddedebilir veya silebilir. Personel rolü ise sadece izin talebi oluşturabilir ve izin kayıtlarını görüntüleyebilir.
+
 ### Bordro Yönetimi
 
 Bordro modülünde çalışanların brüt maaşları üzerinden örnek bir kesinti uygulanarak net maaş hesaplanmaktadır. Bu projede kesinti oranı sade ve anlaşılır olması için sabit oranlı şekilde ele alınmıştır.
 
 Gerçek bordro sistemlerinde gelir vergisi, SGK primi ve işsizlik sigortası gibi daha detaylı kalemler bulunabilir. Bu projede ise temel bordro mantığını göstermek amacıyla sadeleştirilmiş bir hesaplama yapılmıştır.
+
+### Bordro PDF Raporu
+
+Oluşturulan bordro kayıtları PDF olarak indirilebilir. PDF raporunda çalışan bilgileri, bordro dönemi, brüt maaş, kesinti tutarı ve net maaş bilgileri yer almaktadır.
+
+### Dashboard İstatistikleri
+
+Ana sayfada toplam departman sayısı, toplam çalışan sayısı, bordro kayıt sayısı ve izin taleplerinin durumlarına göre istatistikleri gösterilmektedir. Bu sayede sistemdeki temel insan kaynakları verileri hızlıca takip edilebilmektedir.
 
 ## 🛣 Roadmap
 
@@ -235,10 +283,13 @@ Gerçek bordro sistemlerinde gelir vergisi, SGK primi ve işsizlik sigortası gi
 - [x] MVC View yapısının eklenmesi
 - [x] SQL Server bağlantısı
 - [x] GitHub teslim klasör yapısının düzenlenmesi
-- [ ] İzin yönetimi modülünün eklenmesi
-- [ ] Rol bazlı yetkilendirme yapısının genişletilmesi
-- [ ] Bordro raporlarının PDF olarak alınması
-- [ ] Dashboard istatistiklerinin geliştirilmesi
+- [x] İzin yönetimi modülünün eklenmesi
+- [x] Rol bazlı yetkilendirme yapısının genişletilmesi
+- [x] Bordro raporlarının PDF olarak alınması
+- [x] Dashboard istatistiklerinin geliştirilmesi
+- [x] Demo kullanıcıların otomatik oluşturulması
+- [x] Role göre değişen frontend görünümünün hazırlanması
+- [x] Modern responsive arayüz tasarımının yapılması
 
 ## 🤝 Katkı
 
@@ -266,4 +317,3 @@ Tam metin için `LICENSE` dosyası incelenebilir.
 ## 🤖 Not
 
 Bu projede geliştirme sürecini hızlandırmak, kod yapısını düzenlemek ve dokümantasyon hazırlamak amacıyla yapay zekâ destekli araçlardan yararlanılmıştır. Projenin mimari kararları, uygulama tercihleri ve son kontrolleri öğrenci tarafından yapılmıştır.
-
