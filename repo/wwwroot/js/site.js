@@ -7,6 +7,7 @@ let editingEmployeeId = null;
 
 let departmentsCache = [];
 let employeesCache = [];
+let leaveRequestsCache = [];
 
 document.addEventListener("DOMContentLoaded", async () => {
     setDefaultDates();
@@ -19,16 +20,27 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 function setDefaultDates() {
     const today = new Date();
+    const todayValue = today.toISOString().split("T")[0];
 
     const employeeHireDate = document.getElementById("employeeHireDate");
     const payrollPeriod = document.getElementById("payrollPeriod");
+    const leaveStartDate = document.getElementById("leaveStartDate");
+    const leaveEndDate = document.getElementById("leaveEndDate");
 
     if (employeeHireDate) {
-        employeeHireDate.value = today.toISOString().split("T")[0];
+        employeeHireDate.value = todayValue;
     }
 
     if (payrollPeriod) {
         payrollPeriod.value = today.toISOString().slice(0, 7);
+    }
+
+    if (leaveStartDate) {
+        leaveStartDate.value = todayValue;
+    }
+
+    if (leaveEndDate) {
+        leaveEndDate.value = todayValue;
     }
 }
 
@@ -115,6 +127,11 @@ async function showPage(pageId, button) {
         await loadEmployees();
         await loadPayrolls();
     }
+
+    if (pageId === "leaveRequestsPage") {
+        await loadEmployees();
+        await loadLeaveRequests();
+    }
 }
 
 async function registerUser() {
@@ -193,6 +210,7 @@ async function refreshAll() {
     await loadDepartments();
     await loadEmployees();
     await loadPayrolls();
+    await loadLeaveRequests();
 }
 
 async function loadDepartments() {
@@ -372,15 +390,25 @@ async function loadEmployees() {
 
         const list = document.getElementById("employeeList");
         const payrollEmployee = document.getElementById("payrollEmployee");
+        const leaveEmployee = document.getElementById("leaveEmployee");
 
         list.innerHTML = "";
         payrollEmployee.innerHTML = "";
+
+        if (leaveEmployee) {
+            leaveEmployee.innerHTML = "";
+        }
 
         document.getElementById("employeeCount").textContent = employees.length;
 
         if (employees.length === 0) {
             list.innerHTML = "<p>Henüz çalışan kaydı bulunmuyor.</p>";
             payrollEmployee.innerHTML = "<option value=''>Önce çalışan ekleyin</option>";
+
+            if (leaveEmployee) {
+                leaveEmployee.innerHTML = "<option value=''>Önce çalışan ekleyin</option>";
+            }
+
             return;
         }
 
@@ -402,10 +430,17 @@ async function loadEmployees() {
 
             list.appendChild(item);
 
-            const option = document.createElement("option");
-            option.value = employee.id;
-            option.textContent = `${employee.fullName} - ${employee.departmentName}`;
-            payrollEmployee.appendChild(option);
+            const payrollOption = document.createElement("option");
+            payrollOption.value = employee.id;
+            payrollOption.textContent = `${employee.fullName} - ${employee.departmentName}`;
+            payrollEmployee.appendChild(payrollOption);
+
+            if (leaveEmployee) {
+                const leaveOption = document.createElement("option");
+                leaveOption.value = employee.id;
+                leaveOption.textContent = `${employee.fullName} - ${employee.departmentName}`;
+                leaveEmployee.appendChild(leaveOption);
+            }
         });
     } catch (error) {
         showToast(error.message);
@@ -535,6 +570,7 @@ async function deleteEmployee(id) {
         await loadEmployees();
         await loadDepartments();
         await loadPayrolls();
+        await loadLeaveRequests();
 
         showToast("Çalışan silindi.");
     } catch (error) {
@@ -636,6 +672,182 @@ async function deletePayroll(id) {
         await loadPayrolls();
 
         showToast("Bordro kaydı silindi.");
+    } catch (error) {
+        showToast(error.message);
+    }
+}
+
+function formatDate(dateValue) {
+    if (!dateValue) {
+        return "-";
+    }
+
+    return new Date(dateValue).toLocaleDateString("tr-TR");
+}
+
+function getStatusClass(status) {
+    if (status === "Onaylandı") {
+        return "status-approved";
+    }
+
+    if (status === "Reddedildi") {
+        return "status-rejected";
+    }
+
+    return "status-pending";
+}
+
+async function loadLeaveRequests() {
+    const list = document.getElementById("leaveRequestList");
+
+    if (!list) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`${apiBase}/api/LeaveRequests`, {
+            headers: authHeaders()
+        });
+
+        const leaveRequests = await handleResponse(response);
+
+        leaveRequestsCache = leaveRequests;
+
+        list.innerHTML = "";
+
+        if (leaveRequests.length === 0) {
+            list.innerHTML = "<p>Henüz izin talebi bulunmuyor.</p>";
+            return;
+        }
+
+        leaveRequests.forEach(leave => {
+            const item = document.createElement("div");
+            item.className = "item";
+
+            item.innerHTML = `
+                <strong>${leave.employeeFullName}</strong>
+                <p>İzin Türü: ${leave.leaveType}</p>
+                <p>Tarih: ${formatDate(leave.startDate)} - ${formatDate(leave.endDate)}</p>
+                <p>Toplam Gün: ${leave.totalDays}</p>
+                <p>Açıklama: ${leave.description || "-"}</p>
+                <p>Durum: <span class="status-badge ${getStatusClass(leave.status)}">${leave.status}</span></p>
+                <div class="item-actions">
+                    <button class="edit-btn" onclick="updateLeaveRequestStatus(${leave.id}, 'Onaylandı')">Onayla</button>
+                    <button class="delete-btn" onclick="updateLeaveRequestStatus(${leave.id}, 'Reddedildi')">Reddet</button>
+                    <button class="delete-btn" onclick="deleteLeaveRequest(${leave.id})">Sil</button>
+                </div>
+            `;
+
+            list.appendChild(item);
+        });
+    } catch (error) {
+        showToast(error.message);
+    }
+}
+
+async function saveLeaveRequest() {
+    const employeeId = Number(document.getElementById("leaveEmployee").value);
+    const leaveType = document.getElementById("leaveType").value;
+    const startDate = document.getElementById("leaveStartDate").value;
+    const endDate = document.getElementById("leaveEndDate").value;
+    const description = document.getElementById("leaveDescription").value;
+
+    if (!employeeId) {
+        showToast("İzin talebi oluşturmak için çalışan seçmelisiniz.");
+        return;
+    }
+
+    if (!startDate || !endDate) {
+        showToast("Başlangıç ve bitiş tarihi seçmelisiniz.");
+        return;
+    }
+
+    if (endDate < startDate) {
+        showToast("Bitiş tarihi başlangıç tarihinden önce olamaz.");
+        return;
+    }
+
+    const body = {
+        employeeId,
+        leaveType,
+        startDate,
+        endDate,
+        description
+    };
+
+    try {
+        const response = await fetch(`${apiBase}/api/LeaveRequests`, {
+            method: "POST",
+            headers: authHeaders(),
+            body: JSON.stringify(body)
+        });
+
+        await handleResponse(response);
+
+        clearLeaveRequestForm();
+
+        await loadLeaveRequests();
+
+        showToast("İzin talebi başarıyla oluşturuldu.");
+    } catch (error) {
+        showToast(error.message);
+    }
+}
+
+function clearLeaveRequestForm() {
+    const leaveDescription = document.getElementById("leaveDescription");
+    const leaveStartDate = document.getElementById("leaveStartDate");
+    const leaveEndDate = document.getElementById("leaveEndDate");
+
+    if (leaveDescription) {
+        leaveDescription.value = "";
+    }
+
+    const todayValue = new Date().toISOString().split("T")[0];
+
+    if (leaveStartDate) {
+        leaveStartDate.value = todayValue;
+    }
+
+    if (leaveEndDate) {
+        leaveEndDate.value = todayValue;
+    }
+}
+
+async function updateLeaveRequestStatus(id, status) {
+    try {
+        const response = await fetch(`${apiBase}/api/LeaveRequests/${id}/status`, {
+            method: "PUT",
+            headers: authHeaders(),
+            body: JSON.stringify({ status })
+        });
+
+        await handleResponse(response);
+
+        await loadLeaveRequests();
+
+        showToast(`İzin durumu ${status} olarak güncellendi.`);
+    } catch (error) {
+        showToast(error.message);
+    }
+}
+
+async function deleteLeaveRequest(id) {
+    if (!confirm("Bu izin talebini silmek istediğinize emin misiniz?")) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`${apiBase}/api/LeaveRequests/${id}`, {
+            method: "DELETE",
+            headers: authHeaders()
+        });
+
+        await handleResponse(response);
+
+        await loadLeaveRequests();
+
+        showToast("İzin talebi silindi.");
     } catch (error) {
         showToast(error.message);
     }

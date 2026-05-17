@@ -57,6 +57,7 @@
             <button class="nav-btn" onclick="showPage('departmentsPage', this)">Departmanlar</button>
             <button class="nav-btn" onclick="showPage('employeesPage', this)">Çalışanlar</button>
             <button class="nav-btn" onclick="showPage('payrollPage', this)">Bordro</button>
+            <button class="nav-btn" onclick="showPage('leaveRequestsPage', this)">İzinler</button>
         </nav>
 
         <button class="logout-btn" onclick="logout()">Çıkış Yap</button>
@@ -218,6 +219,55 @@
                     </div>
 
                     <div id="payrollList" class="list"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="leaveRequestsPage" class="page">
+            <div class="page-header">
+                <h1>İzin Yönetimi</h1>
+                <p>Çalışanlara ait izin taleplerini oluşturma, listeleme ve durum takibi işlemleri</p>
+            </div>
+
+            <div class="two-column">
+                <div class="panel">
+                    <h2>İzin Talebi Oluştur</h2>
+
+                    <label>Çalışan</label>
+                    <select id="leaveEmployee"></select>
+
+                    <label>İzin Türü</label>
+                    <select id="leaveType">
+                        <option value="Yıllık İzin">Yıllık İzin</option>
+                        <option value="Hastalık İzni">Hastalık İzni</option>
+                        <option value="Raporlu İzin">Raporlu İzin</option>
+                        <option value="Ücretsiz İzin">Ücretsiz İzin</option>
+                    </select>
+
+                    <div class="form-row">
+                        <div>
+                            <label>Başlangıç Tarihi</label>
+                            <input type="date" id="leaveStartDate" />
+                        </div>
+
+                        <div>
+                            <label>Bitiş Tarihi</label>
+                            <input type="date" id="leaveEndDate" />
+                        </div>
+                    </div>
+
+                    <label>Açıklama</label>
+                    <input type="text" id="leaveDescription" placeholder="İzin açıklaması giriniz" />
+
+                    <button onclick="saveLeaveRequest()">İzin Talebi Oluştur</button>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-title">
+                        <h2>İzin Talepleri</h2>
+                    </div>
+
+                    <div id="leaveRequestList" class="list"></div>
                 </div>
             </div>
         </section>
