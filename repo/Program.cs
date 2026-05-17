@@ -6,7 +6,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using QuestPDF.Infrastructure;
 using System.Text;
+
+QuestPDF.Settings.License = LicenseType.Community;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,6 +47,7 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddScoped<PayrollService>();
 builder.Services.AddScoped<TokenService>();
+builder.Services.AddScoped<PayrollPdfService>();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));

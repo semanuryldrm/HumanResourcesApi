@@ -15,11 +15,16 @@ public class PayrollsController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
     private readonly PayrollService _payrollService;
+    private readonly PayrollPdfService _payrollPdfService;
 
-    public PayrollsController(ApplicationDbContext context, PayrollService payrollService)
+    public PayrollsController(
+        ApplicationDbContext context,
+        PayrollService payrollService,
+        PayrollPdfService payrollPdfService)
     {
         _context = context;
         _payrollService = payrollService;
+        _payrollPdfService = payrollPdfService;
     }
 
     [HttpGet]
@@ -147,6 +152,30 @@ public class PayrollsController : ControllerBase
         };
 
         return Ok(result);
+    }
+
+    [Authorize(Roles = "Admin,IK")]
+    [HttpGet("{id:int}/pdf")]
+    public async Task<IActionResult> DownloadPayrollPdf(int id)
+    {
+        var payroll = await _context.Payrolls
+            .Include(p => p.Employee)
+            .FirstOrDefaultAsync(p => p.Id == id);
+
+        if (payroll == null)
+        {
+            return NotFound("PDF oluşturulacak bordro kaydı bulunamadı.");
+        }
+
+        var pdfBytes = _payrollPdfService.GeneratePayrollPdf(payroll);
+
+        var employeeName = payroll.Employee != null
+            ? $"{payroll.Employee.FirstName}-{payroll.Employee.LastName}"
+            : "Calisan";
+
+        var fileName = $"Bordro-{employeeName}-{payroll.Period}.pdf";
+
+        return File(pdfBytes, "application/pdf", fileName);
     }
 
     [Authorize(Roles = "Admin,IK")]

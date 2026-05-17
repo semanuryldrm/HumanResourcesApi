@@ -78,6 +78,10 @@ async function handleResponse(response) {
             throw new Error("Oturum süresi dolmuş olabilir. Lütfen tekrar giriş yapın.");
         }
 
+        if (response.status === 403) {
+            throw new Error("Bu işlem için yetkiniz bulunmuyor.");
+        }
+
         if (Array.isArray(data)) {
             throw new Error(data.join(", "));
         }
@@ -665,12 +669,55 @@ async function loadPayrolls() {
                 <p>Kesinti: ${payroll.deductionAmount} TL</p>
                 <p>Net Maaş: ${payroll.netSalary} TL</p>
                 <div class="item-actions">
+                    <button class="edit-btn" onclick="downloadPayrollPdf(${payroll.id})">PDF İndir</button>
                     <button class="delete-btn" onclick="deletePayroll(${payroll.id})">Sil</button>
                 </div>
             `;
 
             list.appendChild(item);
         });
+    } catch (error) {
+        showToast(error.message);
+    }
+}
+
+async function downloadPayrollPdf(id) {
+    try {
+        const response = await fetch(`${apiBase}/api/Payrolls/${id}/pdf`, {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+
+            if (response.status === 401) {
+                throw new Error("Oturum süresi dolmuş olabilir. Lütfen tekrar giriş yapın.");
+            }
+
+            if (response.status === 403) {
+                throw new Error("Bu işlem için yetkiniz bulunmuyor.");
+            }
+
+            throw new Error(errorText || "PDF indirme sırasında hata oluştu.");
+        }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `bordro-${id}.pdf`;
+
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+
+        window.URL.revokeObjectURL(url);
+
+        showToast("Bordro PDF dosyası indirildi.");
     } catch (error) {
         showToast(error.message);
     }
